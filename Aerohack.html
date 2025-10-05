@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Drone Bird Deterrence - Interactive</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      background: black;
+      overflow: hidden;
+      user-select: none;
+      cursor: crosshair;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .drone-container {
+      position: relative;
+      width: 400px;
+      height: 300px;
+      user-select: none;
+      z-index: 5;
+    }
+
+    .drone-image {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 400px;
+      max-height: 300px;
+      transform: translate(-50%, -50%);
+      filter: drop-shadow(0 0 15px #0ff);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .servo-arm {
+      position: absolute;
+      top: 35%; left: 50%;
+      width: 50px; height: 6px;
+      background: #ffff00;
+      border-radius: 4px;
+      transform-origin: center center;
+      transform: translate(-50%, -50%) rotate(0deg);
+      transition: transform 0.3s ease;
+      z-index: 8;
+      box-shadow: 0 0 10px #ffff66;
+    }
+
+    .pivot-circle {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 14px; height: 14px;
+      background: #ffaa00;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 12px #ffbb22;
+      z-index: 9;
+    }
+
+    .sound-ray {
+      position: absolute;
+      top: 50%;
+      height: 3px;
+      background: red;
+      border-radius: 2px;
+      transform-origin: left center;
+      display: none;
+      z-index: 10;
+    }
+
+    .buzzer {
+      position: absolute;
+      width: 18px; height: 18px;
+      background: #ff0000;
+      border-radius: 50%;
+      box-shadow: 0 0 20px 8px rgba(255,0,0,0.6);
+      transition: box-shadow 0.3s ease, opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 7;
+      opacity: 0.6;
+    }
+    .buzzer-tl { top: 35%; left: 38%; }
+    .buzzer-tr { top: 35%; right: 38%; }
+    .buzzer-bl { bottom: 35%; left: 38%; }
+    .buzzer-br { bottom: 35%; right: 38%; }
+
+    .buzzer.active {
+      box-shadow: 0 0 40px 14px red;
+      opacity: 1;
+    }
+    .buzzer.moderate {
+      box-shadow: 0 0 25px 10px rgba(255,0,0,0.7);
+      opacity: 0.85;
+    }
+
+    .bird {
+      position: absolute;
+      width: 80px;
+      pointer-events: none;
+      transition: opacity 1s ease;
+      z-index: 11;
+    }
+
+    .info-box {
+      position: absolute;
+      padding: 10px 20px;
+      max-width: 600px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: white;
+      z-index: 15;
+    }
+    .info-top-left { top: 20px; left: 20px; }
+    .info-bottom-left { bottom: 20px; left: 20px; }
+    .info-top-right { top: 20px; right: 20px; }
+    .info-bottom-right { bottom: 20px; right: 20px; }
+    .info-center-bottom { bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffcc00;
+  text-shadow: 0 0 10px #ffaa00; }
+    h3 { color: #ffcc00; margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <div class="drone-container" id="drone-container">
+    <img src="https://cdn.thewirecutter.com/wp-content/media/2022/10/drones-2048px-0698.jpg" class="drone-image" draggable="false" />
+    <div class="servo-arm" id="servo-arm">
+      <div class="pivot-circle"></div>
+    </div>
+    <div class="sound-ray" id="sound-ray"></div>
+    <div class="buzzer buzzer-tl" id="buzzer-tl"></div>
+    <div class="buzzer buzzer-tr" id="buzzer-tr"></div>
+    <div class="buzzer buzzer-bl" id="buzzer-bl"></div>
+    <div class="buzzer buzzer-br" id="buzzer-br"></div>
+  </div>
+
+  <!-- Text Boxes -->
+  <div class="info-box info-top-left">
+    <h3>🦅 AeroHack Bird Deterrence System</h3>
+    <ul>
+      <li>YOLO + PIR + Mic Sensor Detection</li>
+      <li>Buzzers: Omnidirectional defense</li>
+      <li>Directional LRAD via Servo Mount</li>
+    </ul>
+  </div>
+  <div class="info-box info-top-right">
+    <h3>🔊 Smart Deterrence</h3>
+    <ul>
+      <li>Buzzers emit 2–5 kHz tones</li>
+      <li>LRAD emits focused 10–30 kHz beam</li>
+      <li>Servo-aimed toward threat direction</li>
+    </ul>
+  </div>
+  <div class="info-box info-bottom-left">
+    <h3>📡 Adaptive Control</h3>
+    <ul>
+      <li>Stateflow-based behavior</li>
+      <li>States: Idle → Detect → Deterrence</li>
+      <li>Avoids false positives</li>
+    </ul>
+  </div>
+  <div class="info-box info-bottom-right">
+    <h3>🌦️ Weather Simulation</h3>
+    <ul>
+      <li>Rain/Wind affects sensors</li>
+      <li>State-machine adapts responses</li>
+    </ul>
+  </div>
+  <div class="info-box info-center-bottom">
+    <h3> Drone Bird Deterrence System | LRAD + Buzzer Hybrid</h3>
+  </div>
+
+  <script>
+    const servo = document.getElementById("servo-arm");
+    const soundRay = document.getElementById("sound-ray");
+    const buzzers = ["tl", "tr", "bl", "br"].map(id => document.getElementById("buzzer-" + id));
+    const droneContainer = document.getElementById("drone-container");
+    let laserTimeout = null;
+
+    document.body.addEventListener("click", (e) => {
+      const rect = droneContainer.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height * 0.35; // shaft moved up
+      const dx = e.clientX - centerX;
+      const dy = e.clientY - centerY;
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      servo.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+      const laserLength = Math.max(distance - 7, 0);
+      const laserLeft = rect.width / 2 - 7;
+      soundRay.style.width = `${laserLength}px`;
+      soundRay.style.top = `35%`;
+      soundRay.style.left = `${laserLeft}px`;
+      soundRay.style.transform = `translateY(-50%) rotate(${angle}deg)`;
+      soundRay.style.display = "block";
+
+      clearTimeout(laserTimeout);
+      laserTimeout = setTimeout(() => {
+        soundRay.style.display = "none";
+        buzzers.forEach(b => b.classList.remove("active", "moderate"));
+      }, 5000);
+
+      const bird = document.createElement("img");
+      bird.src = "https://www.pngplay.com/wp-content/uploads/2/Bird-No-Background.png";
+      bird.className = "bird";
+      bird.style.left = `${e.clientX - 40}px`;
+      bird.style.top = `${e.clientY - 40}px`;
+      document.body.appendChild(bird);
+      setTimeout(() => {
+        bird.style.opacity = 0;
+        setTimeout(() => bird.remove(), 1000);
+      }, 3000);
+
+      buzzers.forEach(b => b.classList.remove("active", "moderate"));
+      if (distance < 140) buzzers.forEach(b => b.classList.add("active"));
+      else if (distance < 250) buzzers.forEach(b => b.classList.add("moderate"));
+    });
+  </script>
+</body>
+</html>
